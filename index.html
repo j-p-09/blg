@@ -1,292 +1,803 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Davčna blagajna</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body, html { height: 100%; }
+    :root {
+      --primary: #2c3e50;
+      --primary-light: #34495e;
+      --accent: #27ae60;
+      --danger: #c0392b;
+      --bg: #ecf0f1;
+      --btn-size: 80px;
+      --radius: 12px;
+      --shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
 
-    .container { display: flex; height: 100vh; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: system-ui, sans-serif;
+    }
 
-    /* Leva stran - navigacija */
+    body,
+    html {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+    }
+
+    /* --- Layout --- */
+    .wrapper {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
     .sidebar {
-      width: 80px;
-      background: #2c3e50;
+      width: 100px;
+      background: var(--primary);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 20px;
+      padding: 20px 0;
     }
 
     .sidebar img {
-      width: 40px;
+      width: 48px;
+      height: 48px;
       margin: 20px 0;
       cursor: pointer;
+      filter: invert(1);
+      opacity: 0.7;
+      transition: opacity 0.2s;
     }
 
-    /* Glavni del */
+    .sidebar img.active,
+    .sidebar img:hover {
+      opacity: 1;
+    }
+
+    /* Main */
     .main {
       flex: 1;
       display: flex;
       flex-direction: column;
     }
 
-    .content {
-      flex: 1;
-      display: none;
-      padding: 20px;
-      overflow: auto;
-    }
-
-    .active {
-      display: flex !important;
-    }
-
-    /* Blagajna layout */
-    .cashier {
+    /* Header (uporabnik) */
+    .header {
+      background: var(--primary-light);
+      color: #fff;
+      padding: 10px 20px;
       display: flex;
-      gap: 20px;
-      flex: 1;
-    }
-
-    .artikli {
-      flex: 1;
-      display: flex;
-      flex-wrap: wrap;
+      align-items: center;
       gap: 10px;
     }
 
-    .artikli button {
-      width: 100px;
-      height: 60px;
-      background: #3498db;
-      color: white;
+    .header select {
+      font-size: 18px;
+      padding: 6px 12px;
+      border-radius: var(--radius);
       border: none;
-      border-radius: 8px;
+    }
+
+    /* Content pages */
+    .page {
+      flex: 1;
+      display: none;
+      overflow: auto;
+      padding: 20px;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Cashier page layout */
+    .cashier {
+      display: flex;
+      height: calc(100% - 100px);
+    }
+
+    .items-panel {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--btn-size), 1fr));
+      gap: 10px;
+      padding-right: 10px;
+      overflow-y: auto;
+    }
+
+    .item-btn {
+      min-height: var(--btn-size);
+      background: var(--accent);
+      color: #fff;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       cursor: pointer;
     }
 
-    .racun {
-      width: 300px;
-      background: #ecf0f1;
-      padding: 10px;
+    .receipt-panel {
+      width: 340px;
+      background: #fff;
       display: flex;
       flex-direction: column;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .racun-item {
+    .receipt-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .receipt-item {
       display: flex;
       justify-content: space-between;
-      padding: 5px;
-      background: white;
-      margin-bottom: 5px;
+      padding: 6px;
+      margin-bottom: 4px;
+      background: var(--bg);
+      border-radius: var(--radius);
       cursor: pointer;
     }
 
+    .receipt-item.selected {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Numpad */
     .numpad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-      margin-top: auto;
+      gap: 6px;
+      padding: 10px;
+      background: var(--bg);
+      border-top: 1px solid #ddd;
     }
 
-    .numpad button {
-      height: 50px;
-      font-size: 20px;
-      background: #bdc3c7;
+    .numpad-btn {
+      min-height: 60px;
+      font-size: 1.4rem;
       border: none;
+      border-radius: var(--radius);
+      background: var(--primary-light);
+      color: #fff;
+      box-shadow: var(--shadow);
       cursor: pointer;
     }
 
-    .bottom-bar {
-      background: #34495e;
-      color: white;
-      padding: 10px;
+    /* Bottom bar */
+    .footer {
+      background: var(--primary-light);
+      color: #fff;
+      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .bottom-bar .znesek {
-      font-size: 24px;
+    .footer .total {
+      font-size: 28px;
     }
 
-    .bottom-bar .popust {
-      font-size: 14px;
+    .footer .discount {
+      font-size: 16px;
     }
 
-    .placilo button {
+    .pay-btn {
+      padding: 12px 20px;
+      font-size: 1.1rem;
       margin-left: 10px;
-      padding: 10px 20px;
-      background: #27ae60;
-      color: white;
       border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    .pay-btn.cash {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .pay-btn.card {
+      background: #2980b9;
+      color: #fff;
+    }
+
+    /* Generic lists (Users, Items, Invoices) */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background: var(--primary-light);
+      color: #fff;
+    }
+
+    .action-btn {
+      background: var(--danger);
+      border: none;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: var(--radius);
       cursor: pointer;
     }
 
-    /* Ostale strani */
-    .seznam {
+    .add-form {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .add-form input {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid #ccc;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .add-form button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    /* Overlay keypad / modal */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      padding: 20px;
+      border-radius: var(--radius);
+      width: 320px;
+      max-width: 90%;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .seznam input {
-      padding: 5px;
-      width: 200px;
+    .modal-display {
+      font-size: 2rem;
+      text-align: right;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: var(--radius);
     }
 
-    .seznam button {
-      padding: 5px 10px;
-      width: 100px;
+    .modal .numpad {
+      grid-template-columns: repeat(3, 1fr);
     }
 
+    .modal .numpad-btn {
+      min-height: 70px;
+      font-size: 1.6rem;
+      background: var(--primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-actions button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-actions .ok {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .modal-actions .cancel {
+      background: var(--danger);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <img src="blagajna.png" id="nav-cash" alt="Blagajna" />
+      <img src="racun.png" id="nav-invoices" alt="Računi" />
+      <img src="uporabnik.png" id="nav-users" alt="Uporabniki" />
+      <img src="nastavitve.png" id="nav-items" alt="Nastavitve" />
+    </div>
 
-<div class="container">
-  <div class="sidebar">
-    <img src="blagajna.png" onclick="odpriStran('blagajna')">
-    <img src="racun.png" onclick="odpriStran('racuni')">
-    <img src="uporabnik.png" onclick="odpriStran('uporabniki')">
-    <img src="nastavitve.png" onclick="odpriStran('nastavitve')">
-  </div>
+    <!-- Main -->
+    <div class="main">
+      <div class="header">
+        <label for="userSelect">Uporabnik:</label>
+        <select id="userSelect"></select>
+      </div>
 
-  <div class="main">
-    <div id="blagajna" class="content active">
-      <div class="cashier">
-        <div class="artikli" id="artikli">
-          <button onclick="dodajArtikel('Kava', 2)">Kava</button>
-          <button onclick="dodajArtikel('Čaj', 1.5)">Čaj</button>
-          <button onclick="dodajArtikel('Sok', 2.2)">Sok</button>
-          <button onclick="dodajArtikel('Sendvič', 3)">Sendvič</button>
+      <!-- Pages -->
+      <div id="page-cash" class="page active">
+        <div class="cashier">
+          <div class="items-panel" id="itemsPanel"></div>
+          <div class="receipt-panel">
+            <div class="receipt-list" id="receiptList"></div>
+            <div class="numpad" id="qtyPad">
+              <!-- Filled by JS -->
+            </div>
+          </div>
         </div>
-        <div class="racun" id="racun"></div>
       </div>
 
-      <div class="numpad" id="numpad">
-        <button onclick="vnesiStevilo('7')">7</button>
-        <button onclick="vnesiStevilo('8')">8</button>
-        <button onclick="vnesiStevilo('9')">9</button>
-        <button onclick="vnesiStevilo('4')">4</button>
-        <button onclick="vnesiStevilo('5')">5</button>
-        <button onclick="vnesiStevilo('6')">6</button>
-        <button onclick="vnesiStevilo('1')">1</button>
-        <button onclick="vnesiStevilo('2')">2</button>
-        <button onclick="vnesiStevilo('3')">3</button>
-        <button onclick="dodajPopust()">%</button>
-        <button onclick="vnesiStevilo('0')">0</button>
-        <button onclick="odstraniArtikel()">X</button>
+      <div id="page-invoices" class="page">
+        <h2>Računi</h2>
+        <table id="invoiceTable">
+          <thead>
+            <tr>
+              <th>Št.</th>
+              <th>Datum</th>
+              <th>Uporabnik</th>
+              <th>Skupaj</th>
+              <th>Popust</th>
+              <th>Plačano</th>
+              <th>Način</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-    </div>
 
-    <div id="racuni" class="content"><h2>Seznam računov</h2></div>
-    <div id="uporabniki" class="content">
-      <div class="seznam">
-        <input type="text" placeholder="Dodaj uporabnika">
-        <button>Dodaj</button>
+      <div id="page-users" class="page">
+        <h2>Uporabniki</h2>
+        <div class="add-form">
+          <input type="text" id="newUserName" placeholder="Ime uporabnika" />
+          <button id="addUserBtn">Dodaj</button>
+        </div>
+        <table id="userTable">
+          <thead>
+            <tr>
+              <th>Ime</th>
+              <th>Akcija</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-    </div>
-    <div id="nastavitve" class="content">
-      <div class="seznam">
-        <input type="text" placeholder="Dodaj artikel">
-        <button>Dodaj</button>
-      </div>
-    </div>
 
-    <div class="bottom-bar">
-      <div>
-        <div class="znesek" id="skupaj">Skupaj: 0€</div>
-        <div class="popust" id="popust">Popust: 0%</div>
+      <div id="page-items" class="page">
+        <h2>Artikli</h2>
+        <div class="add-form">
+          <input type="text" id="newItemName" placeholder="Naziv" />
+          <input type="number" id="newItemPrice" placeholder="Cena (€)" step="0.01" />
+          <button id="addItemBtn">Dodaj</button>
+        </div>
+        <table id="itemTable">
+          <thead>
+            <tr>
+              <th>Naziv</th>
+              <th>Cena (€)</th>
+              <th>Akcija</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <div class="placilo">
-        <button onclick="placiloGotovina()">GOTOVINA</button>
-        <button onclick="placiloKartica()">KARTICA</button>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div>
+          <div class="total" id="totalLabel">0.00€</div>
+          <div class="discount" id="discountLabel">Popust: 0%</div>
+        </div>
+        <div>
+          <button class="pay-btn cash" id="payCashBtn">GOTOVINA</button>
+          <button class="pay-btn card" id="payCardBtn">KARTICA</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-  let racun = [];
-  let izbranIndex = null;
-  let popust = 0;
+  <!-- Overlay modal for num input & cash -->
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal">
+      <div class="modal-display" id="modalDisplay">0</div>
+      <div class="numpad" id="modalPad"></div>
+      <div class="modal-actions">
+        <button class="cancel" id="modalCancel">Prekliči</button>
+        <button class="ok" id="modalOk">V redu</button>
+      </div>
+    </div>
+  </div>
 
-  function odpriStran(id) {
-    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
+  <script>
+    /* ------------------ Data layer (localStorage) ------------------ */
+    const store = {
+      load(key, fallback) {
+        return JSON.parse(localStorage.getItem(key)) || fallback;
+      },
+      save(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+      },
+    };
 
-  function dodajArtikel(naziv, cena) {
-    racun.push({ naziv, cena, kolicina: 1 });
-    prikaziRacun();
-  }
+    const keys = {
+      ITEMS: "pos_items",
+      USERS: "pos_users",
+      INVOICES: "pos_invoices",
+    };
 
-  function prikaziRacun() {
-    const racunDiv = document.getElementById('racun');
-    racunDiv.innerHTML = '';
-    racun.forEach((item, index) => {
-      const el = document.createElement('div');
-      el.className = 'racun-item';
-      el.innerText = `${item.kolicina} x ${item.naziv} - ${item.kolicina * item.cena}€`;
-      el.onclick = () => izbranIndex = index;
-      racunDiv.appendChild(el);
+    let items = store.load(keys.ITEMS, [
+      { id: 1, name: "Kava", price: 2.0 },
+      { id: 2, name: "Čaj", price: 1.5 },
+      { id: 3, name: "Sok", price: 2.2 },
+      { id: 4, name: "Sendvič", price: 3.0 },
+    ]);
+
+    let users = store.load(keys.USERS, [
+      { id: 1, name: "Blagajnik" },
+    ]);
+
+    let invoices = store.load(keys.INVOICES, []);
+
+    /* ------------------ UI helpers ------------------ */
+    const $ = (id) => document.getElementById(id);
+
+    // Sidebar navigation
+    const pages = {
+      cash: $("page-cash"),
+      invoices: $("page-invoices"),
+      users: $("page-users"),
+      items: $("page-items"),
+    };
+
+    const navIcons = {
+      cash: $("nav-cash"),
+      invoices: $("nav-invoices"),
+      users: $("nav-users"),
+      items: $("nav-items"),
+    };
+
+    Object.entries(navIcons).forEach(([key, el]) => {
+      el.addEventListener("click", () => switchPage(key));
     });
-    izracunajSkupaj();
-  }
 
-  function vnesiStevilo(stevka) {
-    if (izbranIndex === null) return;
-    const trenutni = racun[izbranIndex];
-    trenutni.kolicina = parseInt(stevka);
-    prikaziRacun();
-  }
+    function switchPage(page) {
+      Object.values(pages).forEach((p) => p.classList.remove("active"));
+      pages[page].classList.add("active");
+      Object.values(navIcons).forEach((i) => i.classList.remove("active"));
+      navIcons[page].classList.add("active");
+      if (page === "invoices") renderInvoiceTable();
+      if (page === "users") renderUserTable();
+      if (page === "items") renderItemTable();
+    }
 
-  function odstraniArtikel() {
-    if (izbranIndex === null) return;
-    racun.splice(izbranIndex, 1);
-    izbranIndex = null;
-    prikaziRacun();
-  }
+    /* ------------------ Users management ------------------ */
+    function renderUserSelect() {
+      const sel = $("userSelect");
+      sel.innerHTML = users
+        .map((u) => `<option value="${u.id}">${u.name}</option>`) 
+        .join("");
+    }
 
-  function dodajPopust() {
-    let p = prompt("Vnesi popust v %");
-    popust = parseInt(p) || 0;
-    document.getElementById('popust').innerText = `Popust: ${popust}%`;
-    izracunajSkupaj();
-  }
+    function renderUserTable() {
+      const tbody = $("userTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      users.forEach((u) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${u.name}</td><td><button class="action-btn" data-id="${u.id}">Izbriši</button></td>`;
+        tbody.appendChild(tr);
+      });
+      tbody.querySelectorAll("button").forEach((btn) =>
+        btn.addEventListener("click", () => deleteUser(parseInt(btn.dataset.id)))
+      );
+    }
 
-  function izracunajSkupaj() {
-    let skupaj = racun.reduce((s, r) => s + r.kolicina * r.cena, 0);
-    skupaj = skupaj - (skupaj * (popust / 100));
-    document.getElementById('skupaj').innerText = `Skupaj: ${skupaj.toFixed(2)}€`;
-  }
+    function addUser() {
+      const name = $("newUserName").value.trim();
+      if (!name) return;
+      const id = Date.now();
+      users.push({ id, name });
+      store.save(keys.USERS, users);
+      $("newUserName").value = "";
+      renderUserSelect();
+      renderUserTable();
+    }
 
-  function placiloGotovina() {
-    let prejeto = parseFloat(prompt("Koliko je bilo prejeto?"));
-    let skupaj = racun.reduce((s, r) => s + r.kolicina * r.cena, 0);
-    skupaj = skupaj - (skupaj * (popust / 100));
-    let vrni = prejeto - skupaj;
-    alert(vrni >= 0 ? `Vrni: ${vrni.toFixed(2)}€` : `Manjka: ${Math.abs(vrni).toFixed(2)}€`);
-    shraniRacun();
-  }
+    function deleteUser(id) {
+      if (users.length === 1) return alert("Mora obstajati vsaj en uporabnik!");
+      users = users.filter((u) => u.id !== id);
+      store.save(keys.USERS, users);
+      renderUserSelect();
+      renderUserTable();
+    }
 
-  function placiloKartica() {
-    alert("Plačilo s kartico uspešno.");
-    shraniRacun();
-  }
+    $("addUserBtn").addEventListener("click", addUser);
 
-  function shraniRacun() {
-    // Dodaj k seznamu računov, izprazni trenuten račun
-    racun = [];
-    izbranIndex = null;
-    popust = 0;
-    document.getElementById('popust').innerText = `Popust: 0%`;
-    prikaziRacun();
-  }
-</script>
+    /* ------------------ Items management ------------------ */
+    function renderItemsPanel() {
+      const panel = $("itemsPanel");
+      panel.innerHTML = "";
+      items.forEach((item) => {
+        const btn = document.createElement("button");
+        btn.className = "item-btn";
+        btn.textContent = `${item.name}\n${item.price.toFixed(2)}€`;
+        btn.addEventListener("click", () => addItemToReceipt(item));
+        panel.appendChild(btn);
+      });
+    }
 
+    function renderItemTable() {
+      const tbody = $("itemTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      items.forEach((it) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td contenteditable data-id="${it.id}" data-field="name">${it.name}</td>
+          <td contenteditable data-id="${it.id}" data-field="price">${it.price.toFixed(2)}</td>
+          <td><button class="action-btn" data-id="${it.id}">Izbriši</button></td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Editing inline
+      tbody.querySelectorAll("td[contenteditable]").forEach((cell) => {
+        cell.addEventListener("blur", () => {
+          const id = parseInt(cell.dataset.id);
+          const field = cell.dataset.field;
+          const value = field === "price" ? parseFloat(cell.textContent) : cell.textContent.trim();
+          const item = items.find((i) => i.id === id);
+          if (field === "price" && isNaN(value)) return;
+          item[field] = value;
+          store.save(keys.ITEMS, items);
+          renderItemsPanel();
+        });
+      });
+
+      tbody.querySelectorAll("button").forEach((btn) =>
+        btn.addEventListener("click", () => deleteItem(parseInt(btn.dataset.id)))
+      );
+    }
+
+    function addItem() {
+      const name = $("newItemName").value.trim();
+      const price = parseFloat($("newItemPrice").value);
+      if (!name || isNaN(price)) return;
+      items.push({ id: Date.now(), name, price });
+      store.save(keys.ITEMS, items);
+      $("newItemName").value = "";
+      $("newItemPrice").value = "";
+      renderItemsPanel();
+      renderItemTable();
+    }
+
+    function deleteItem(id) {
+      items = items.filter((i) => i.id !== id);
+      store.save(keys.ITEMS, items);
+      renderItemsPanel();
+      renderItemTable();
+    }
+
+    $("addItemBtn").addEventListener("click", addItem);
+
+    /* ------------------ Cashier / Receipt ------------------ */
+    let currentReceipt = [];
+    let selectedIndex = null;
+    let discount = 0;
+
+    function addItemToReceipt(item) {
+      const existing = currentReceipt.find((r) => r.id === item.id);
+      if (existing) existing.qty += 1;
+      else currentReceipt.push({ ...item, qty: 1 });
+      renderReceipt();
+    }
+
+    function renderReceipt() {
+      const list = $("receiptList");
+      list.innerHTML = "";
+      currentReceipt.forEach((it, idx) => {
+        const div = document.createElement("div");
+        div.className = `receipt-item ${idx === selectedIndex ? "selected" : ""}`;
+        div.textContent = `${it.qty} x ${it.name} - ${(it.qty * it.price).toFixed(2)}€`;
+        div.addEventListener("click", () => {
+          selectedIndex = idx === selectedIndex ? null : idx;
+          renderReceipt();
+        });
+        list.appendChild(div);
+      });
+      updateTotals();
+    }
+
+    function updateTotals() {
+      let total = currentReceipt.reduce((s, i) => s + i.qty * i.price, 0);
+      const totalBeforeDiscount = total;
+      total -= total * (discount / 100);
+      $("totalLabel").textContent = `${total.toFixed(2)}€`;
+      $("discountLabel").textContent = `Popust: ${discount}% (${totalBeforeDiscount.toFixed(2)}€ → ${total.toFixed(2)}€)`;
+    }
+
+    /* Numpad for quantity */
+    function buildQtyPad() {
+      const pad = $("qtyPad");
+      const keys = ["7", "8", "9", "4", "5", "6", "1", "2", "3", "%", "0", "X"];
+      pad.innerHTML = "";
+      keys.forEach((k) => {
+        const btn = document.createElement("button");
+        btn.className = "numpad-btn";
+        btn.textContent = k;
+        btn.addEventListener("click", () => qtyPadPress(k));
+        pad.appendChild(btn);
+      });
+    }
+
+    function qtyPadPress(key) {
+      if (key === "%") return openNumberModal("Vnesi popust (%)", (val) => {
+        discount = parseInt(val) || 0;
+        updateTotals();
+      });
+      if (key === "X") {
+        if (selectedIndex !== null) currentReceipt.splice(selectedIndex, 1);
+      } else {
+        if (selectedIndex !== null) currentReceipt[selectedIndex].qty = parseInt(key);
+      }
+      selectedIndex = null;
+      renderReceipt();
+    }
+
+    /* ------------------ Modal keypad ------------------ */
+    const overlay = $("overlay");
+    const modalDisplay = $("modalDisplay");
+    const modalPad = $("modalPad");
+
+    function buildModalPad() {
+      const keys = ["7", "8", "9", "4", "5", "6", "1", "2", "3", "C", "0", "←"];
+      modalPad.innerHTML = "";
+      keys.forEach((k) => {
+        const btn = document.createElement("button");
+        btn.className = "numpad-btn";
+        btn.textContent = k;
+        btn.addEventListener("click", () => modalKeyPress(k));
+        modalPad.appendChild(btn);
+      });
+    }
+
+    let modalCallback = null;
+
+    function openNumberModal(title, callback) {
+      modalCallback = callback;
+      modalDisplay.textContent = "0";
+      overlay.classList.add("active");
+    }
+
+    function modalKeyPress(k) {
+      let val = modalDisplay.textContent;
+      if (k === "C") val = "0";
+      else if (k === "←") val = val.length > 1 ? val.slice(0, -1) : "0";
+      else val = val === "0" ? k : val + k;
+      modalDisplay.textContent = val;
+    }
+
+    $("modalCancel").addEventListener("click", () => overlay.classList.remove("active"));
+    $("modalOk").addEventListener("click", () => {
+      overlay.classList.remove("active");
+      if (modalCallback) modalCallback(modalDisplay.textContent);
+    });
+
+    /* ------------------ Payments ------------------ */
+    function payCash() {
+      if (currentReceipt.length === 0) return;
+      const total = parseFloat($("totalLabel").textContent);
+      openNumberModal("Prejeto (€)", (val) => {
+        const received = parseFloat(val);
+        const change = (received - total).toFixed(2);
+        if (change < 0) alert(`Še manjka ${(Math.abs(change)).toFixed(2)}€`);
+        else alert(`Vračilo ${change}€`);
+        finalizeInvoice("GOTOVINA", received, change);
+      });
+    }
+
+    function payCard() {
+      if (currentReceipt.length === 0) return;
+      finalizeInvoice("KARTICA", null, null);
+      alert("Plačilo s kartico uspešno.");
+    }
+
+    function finalizeInvoice(method, cashReceived, change) {
+      const userId = parseInt($("userSelect").value);
+      const userName = users.find((u) => u.id === userId).name;
+      const id = Date.now();
+      const totalBeforeDiscount = currentReceipt.reduce((s, i) => s + i.qty * i.price, 0);
+      const total = parseFloat($("totalLabel").textContent);
+      invoices.push({
+        id,
+        date: new Date().toLocaleString(),
+        user: userName,
+        items: currentReceipt,
+        discount,
+        total,
+        paid: true,
+        method,
+        cashReceived,
+        change,
+      });
+      store.save(keys.INVOICES, invoices);
+      // Reset
+      currentReceipt = [];
+      discount = 0;
+      selectedIndex = null;
+      renderReceipt();
+      updateTotals();
+    }
+
+    $("payCashBtn").addEventListener("click", payCash);
+    $("payCardBtn").addEventListener("click", payCard);
+
+    /* ------------------ Invoice list ------------------ */
+    function renderInvoiceTable() {
+      const tbody = $("invoiceTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      invoices.forEach((inv) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${inv.id}</td>
+          <td>${inv.date}</td>
+          <td>${inv.user}</td>
+          <td>${inv.total.toFixed(2)}€</td>
+          <td>${inv.discount}%</td>
+          <td>${inv.paid ? "✔" : "✖"}</td>
+          <td>${inv.method}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ------------------ Init ------------------ */
+    function init() {
+      renderUserSelect();
+      renderItemsPanel();
+      buildQtyPad();
+      buildModalPad();
+      renderUserTable();
+      renderItemTable();
+    }
+
+    init();
+  </script>
 </body>
 </html>
