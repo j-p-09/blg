@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <title>Davčna blagajna</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body, html { height: 100%; }
+
+    .container { display: flex; height: 100vh; }
+
+    /* Leva stran - navigacija */
+    .sidebar {
+      width: 80px;
+      background: #2c3e50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+    }
+
+    .sidebar img {
+      width: 40px;
+      margin: 20px 0;
+      cursor: pointer;
+    }
+
+    /* Glavni del */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content {
+      flex: 1;
+      display: none;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .active {
+      display: flex !important;
+    }
+
+    /* Blagajna layout */
+    .cashier {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .artikli {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .artikli button {
+      width: 100px;
+      height: 60px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .racun {
+      width: 300px;
+      background: #ecf0f1;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .racun-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px;
+      background: white;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: auto;
+    }
+
+    .numpad button {
+      height: 50px;
+      font-size: 20px;
+      background: #bdc3c7;
+      border: none;
+      cursor: pointer;
+    }
+
+    .bottom-bar {
+      background: #34495e;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bottom-bar .znesek {
+      font-size: 24px;
+    }
+
+    .bottom-bar .popust {
+      font-size: 14px;
+    }
+
+    .placilo button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Ostale strani */
+    .seznam {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .seznam input {
+      padding: 5px;
+      width: 200px;
+    }
+
+    .seznam button {
+      padding: 5px 10px;
+      width: 100px;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="sidebar">
+    <img src="blagajna.png" onclick="odpriStran('blagajna')">
+    <img src="racun.png" onclick="odpriStran('racuni')">
+    <img src="uporabnik.png" onclick="odpriStran('uporabniki')">
+    <img src="nastavitve.png" onclick="odpriStran('nastavitve')">
+  </div>
+
+  <div class="main">
+    <div id="blagajna" class="content active">
+      <div class="cashier">
+        <div class="artikli" id="artikli">
+          <button onclick="dodajArtikel('Kava', 2)">Kava</button>
+          <button onclick="dodajArtikel('Čaj', 1.5)">Čaj</button>
+          <button onclick="dodajArtikel('Sok', 2.2)">Sok</button>
+          <button onclick="dodajArtikel('Sendvič', 3)">Sendvič</button>
+        </div>
+        <div class="racun" id="racun"></div>
+      </div>
+
+      <div class="numpad" id="numpad">
+        <button onclick="vnesiStevilo('7')">7</button>
+        <button onclick="vnesiStevilo('8')">8</button>
+        <button onclick="vnesiStevilo('9')">9</button>
+        <button onclick="vnesiStevilo('4')">4</button>
+        <button onclick="vnesiStevilo('5')">5</button>
+        <button onclick="vnesiStevilo('6')">6</button>
+        <button onclick="vnesiStevilo('1')">1</button>
+        <button onclick="vnesiStevilo('2')">2</button>
+        <button onclick="vnesiStevilo('3')">3</button>
+        <button onclick="dodajPopust()">%</button>
+        <button onclick="vnesiStevilo('0')">0</button>
+        <button onclick="odstraniArtikel()">X</button>
+      </div>
+    </div>
+
+    <div id="racuni" class="content"><h2>Seznam računov</h2></div>
+    <div id="uporabniki" class="content">
+      <div class="seznam">
+        <input type="text" placeholder="Dodaj uporabnika">
+        <button>Dodaj</button>
+      </div>
+    </div>
+    <div id="nastavitve" class="content">
+      <div class="seznam">
+        <input type="text" placeholder="Dodaj artikel">
+        <button>Dodaj</button>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div>
+        <div class="znesek" id="skupaj">Skupaj: 0€</div>
+        <div class="popust" id="popust">Popust: 0%</div>
+      </div>
+      <div class="placilo">
+        <button onclick="placiloGotovina()">GOTOVINA</button>
+        <button onclick="placiloKartica()">KARTICA</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let racun = [];
+  let izbranIndex = null;
+  let popust = 0;
+
+  function odpriStran(id) {
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function dodajArtikel(naziv, cena) {
+    racun.push({ naziv, cena, kolicina: 1 });
+    prikaziRacun();
+  }
+
+  function prikaziRacun() {
+    const racunDiv = document.getElementById('racun');
+    racunDiv.innerHTML = '';
+    racun.forEach((item, index) => {
+      const el = document.createElement('div');
+      el.className = 'racun-item';
+      el.innerText = `${item.kolicina} x ${item.naziv} - ${item.kolicina * item.cena}€`;
+      el.onclick = () => izbranIndex = index;
+      racunDiv.appendChild(el);
+    });
+    izracunajSkupaj();
+  }
+
+  function vnesiStevilo(stevka) {
+    if (izbranIndex === null) return;
+    const trenutni = racun[izbranIndex];
+    trenutni.kolicina = parseInt(stevka);
+    prikaziRacun();
+  }
+
+  function odstraniArtikel() {
+    if (izbranIndex === null) return;
+    racun.splice(izbranIndex, 1);
+    izbranIndex = null;
+    prikaziRacun();
+  }
+
+  function dodajPopust() {
+    let p = prompt("Vnesi popust v %");
+    popust = parseInt(p) || 0;
+    document.getElementById('popust').innerText = `Popust: ${popust}%`;
+    izracunajSkupaj();
+  }
+
+  function izracunajSkupaj() {
+    let skupaj = racun.reduce((s, r) => s + r.kolicina * r.cena, 0);
+    skupaj = skupaj - (skupaj * (popust / 100));
+    document.getElementById('skupaj').innerText = `Skupaj: ${skupaj.toFixed(2)}€`;
+  }
+
+  function placiloGotovina() {
+    let prejeto = parseFloat(prompt("Koliko je bilo prejeto?"));
+    let skupaj = racun.reduce((s, r) => s + r.kolicina * r.cena, 0);
+    skupaj = skupaj - (skupaj * (popust / 100));
+    let vrni = prejeto - skupaj;
+    alert(vrni >= 0 ? `Vrni: ${vrni.toFixed(2)}€` : `Manjka: ${Math.abs(vrni).toFixed(2)}€`);
+    shraniRacun();
+  }
+
+  function placiloKartica() {
+    alert("Plačilo s kartico uspešno.");
+    shraniRacun();
+  }
+
+  function shraniRacun() {
+    // Dodaj k seznamu računov, izprazni trenuten račun
+    racun = [];
+    izbranIndex = null;
+    popust = 0;
+    document.getElementById('popust').innerText = `Popust: 0%`;
+    prikaziRacun();
+  }
+</script>
+
+</body>
+</html>
